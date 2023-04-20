@@ -5,7 +5,4 @@ import commands
 
 # Run ls command, get output, and print it
 for line in commands.getstatusoutput('ls -l'):
-	print line
-
-
-
+    print(line)
