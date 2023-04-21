@@ -5,11 +5,14 @@ HOST = "localhost"
 # Default FTP port
 PORT = 21
 
+def main():
+    if len(sys.argv) < 2:
+        print("Correct format: python " + sys.argv[0] + " <port number>\n")
+    else:
+        PORT = int(sys.argv[1])
+        control(HOST, PORT)
 
-if len(sys.argv) < 2:
-    print("Correct format: python " + sys.argv[0] + " <port number>\n")
-else:
-    PORT = int(sys.argv[1])
+def control(HOST, PORT):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.bind((HOST, PORT))
         s.listen(5)
