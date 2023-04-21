@@ -18,11 +18,28 @@ def main():
 #Control connection function
 def control(HOST, PORT):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        print(f"[+] Connecting to {HOST}:{PORT}")
         s.connect((HOST, PORT))
-        s.sendall(b"Hello world")
-        data = s.recv(1024)
-
-    print(f"Received {data!r}")
+        print("[+] Connected.")
+        uploadFile(s)
     s.close()
+
+#Test function to test transfering file to server
+def uploadFile(s):
+    BUFFER_SIZE = 4096
+    SEPARATOR = "<SEPARATOR>"
+    #name of local text file on my computer
+    fileName = "test1.txt"
+    fileSize = os.path.getsize(fileName)
+    s.send(f"{fileName}{SEPARATOR}{fileSize}".encode())
+    
+    with open(fileName, "rb") as f:
+        while True:
+            bytes_read = f.read(BUFFER_SIZE)
+            if not bytes_read:
+                break
+            s.sendall(bytes_read)
+
+    print("Sent", fileSize, "bytes.")
 
 main()
