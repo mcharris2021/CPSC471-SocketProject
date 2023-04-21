@@ -33,7 +33,6 @@ def fileTest(conn):
 	rcvTemp = conn.recv(BUFFER_SIZE).decode()
 	filename, filesize = rcvTemp.split(SEPARATOR)
 	filename = os.path.basename(filename)
-	filesize = int(filesize)
 	with open(filename, "wb") as f:
 		while True:
 			bytes_read = conn.recv(BUFFER_SIZE)
