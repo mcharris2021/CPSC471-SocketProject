@@ -21,13 +21,13 @@ def control(HOST, PORT):
             conn, addr = s.accept()
             with conn:
                 print(f"[+] {addr} is connected.")
-                fileTest(conn)
+                fileUpload(conn)
             conn.close()
             print(f"[-] {addr} is disconnected.")
             break
 
 #Test function to test receiving file from client
-def fileTest(conn):
+def fileUpload(conn):
 	BUFFER_SIZE = 4096
 	SEPARATOR = "<SEPARATOR>"
 	rcvTemp = conn.recv(BUFFER_SIZE).decode()
