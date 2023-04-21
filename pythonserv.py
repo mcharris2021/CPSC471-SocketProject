@@ -27,4 +27,9 @@ def control(HOST, PORT):
                         break
                     conn.sendall(data)
             conn.close()
+            # This stops the server, if you want the
+            # server to keep running after ending connections
+            # comment out the break
             break
+
+main()
