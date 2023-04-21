@@ -1,4 +1,4 @@
-import socket, sys
+import socket, sys, os
 
 # Default hostname
 HOST = "localhost"
@@ -17,14 +17,28 @@ def control(HOST, PORT):
         s.bind((HOST, PORT))
         s.listen(5)
         while True:
-            print("Waiting for connections...")
+            print(f"[*] Listening as {HOST}:{PORT}")
             conn, addr = s.accept()
             with conn:
-                print("Connected by", addr[0])
-                while True:
-                    data = conn.recv(1024)
-                    if not data:
-                        break
-                    conn.sendall(data)
+                print(f"[+] {addr} is connected.")
+                fileTest(conn)
             conn.close()
+            print(f"[-] {addr} is disconnected.")
             break
+
+#Test function to test receiving file from client
+def fileTest(conn):
+	BUFFER_SIZE = 4096
+	SEPARATOR = "<SEPARATOR>"
+	rcvTemp = conn.recv(BUFFER_SIZE).decode()
+	filename, filesize = rcvTemp.split(SEPARATOR)
+	filename = os.path.basename(filename)
+	filesize = int(filesize)
+	with open(filename, "wb") as f:
+		while True:
+			bytes_read = conn.recv(BUFFER_SIZE)
+			if not bytes_read:
+				break
+			f.write(bytes_read)
+	print(f"[+] File {filename} received")
+main()
