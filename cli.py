@@ -56,7 +56,6 @@ def uploadFile(d):
             if not bytes_read:
                 break
             d.sendall(bytes_read)
-
     print("[DEBUG] Sent", fs, "bytes.")
 
 main()
