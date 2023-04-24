@@ -21,19 +21,19 @@ def controlCONN(HOST, PORT):
         print(f"[+] Connecting to {HOST}:{PORT}")
         s.connect((HOST, PORT))
         print("[+] Connected.")
-        dataCONN(HOST, s)
-    s.close()
+        # Data connection is currently bugged
+        #dataCONN(HOST, s)
+        uploadFile(s)
 
 #Data Connection Function
 def dataCONN(HOST, s):
     dport = s.recv(4096).decode()
     dport = int(dport)
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as d:
-        print(f"[+] Establishing data connecting to {HOST}:{dport}")
+        print(f"[+] Establishing data connection to {HOST}:{dport}")
         d.connect((HOST, dport))
         print("[+] Connected.")
         uploadFile(d)
-    d.close()
 
 #Test function to test transfering file to server
 #creating the download function should be more or less the same as uploading,

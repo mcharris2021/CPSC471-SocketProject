@@ -1,7 +1,7 @@
 import socket, sys, os
 
 # Default hostname
-HOST = "localhost" # 76.170.236.182, 192.168.50.187
+HOST = "localhost"
 # Default FTP port
 PORT = 21
 
@@ -32,11 +32,13 @@ def controlCONN(HOST, PORT):
             with conn:
                 print(f"[+] {addr} is connected.")
                 #call the data connection function
-                dataCONN(conn)
+                #Data connection is currently bugged, see related Issue in
+                #github for more information
+                #dataCONN(conn)
+                fileUpload(conn)
             #close main connection. Once again, for our end product, the server would keep the
             #connection open so the client can run more commands, until it gets a command from
             #the client to close the connect, i.e. 'quit'
-            conn.close()
             print(f"[-] {addr} is disconnected.")
             break
 
@@ -65,7 +67,6 @@ def dataCONN(conn):
                 fileUpload(dconn)
             #close connection, as this is a temporary connection, after the task
             #is complete automatically close the connection
-            dconn.close()
             print(f"[-] data connection closed for {addr}")
             break
 
