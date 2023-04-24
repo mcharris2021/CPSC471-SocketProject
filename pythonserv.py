@@ -8,7 +8,7 @@ PORT = 21
 #main function, is called at end of program
 def main():
     if len(sys.argv) < 2:
-        print("Correct format: python " + sys.argv[0] + " <port number>\n")
+        print("[*] Correct format: python " + sys.argv[0] + " <port number>\n")
     else:
         PORT = int(sys.argv[1])
         controlCONN(HOST, PORT)

@@ -8,7 +8,7 @@ PORT = 21
 #Main function, called at the end
 def main():
     if len(sys.argv) < 2:
-        print("Correct format: python " + sys.argv[0] + " <server hostname> <server port>\n")
+        print("[*] Correct format: python " + sys.argv[0] + " <server hostname> <server port>\n")
     else:
         HOST = sys.argv[1]
         PORT = int(sys.argv[2])
@@ -18,12 +18,13 @@ def main():
 #Control connection function
 def controlCONN(HOST, PORT):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        print(f"[+] Connecting to {HOST}:{PORT}")
+        print(f"[*] Connecting to {HOST}:{PORT}")
         s.connect((HOST, PORT))
         print("[+] Connected.")
         # Data connection is currently bugged
         #dataCONN(HOST, s)
         uploadFile(s)
+    print(f"[-] Disconnected from {HOST}:{PORT}")
 
 #Data Connection Function
 def dataCONN(HOST, s):
@@ -56,6 +57,6 @@ def uploadFile(d):
                 break
             d.sendall(bytes_read)
 
-    print("Sent", fs, "bytes.")
+    print("[DEBUG] Sent", fs, "bytes.")
 
 main()
