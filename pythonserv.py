@@ -1,7 +1,7 @@
 import socket, sys, os
 
 # Default hostname
-HOST = "localhost"
+HOST = "localhost" # 76.170.236.182, 192.168.50.187
 # Default FTP port
 PORT = 21
 
@@ -70,26 +70,31 @@ def dataCONN(conn):
             break
 
 #Test function to test receiving file from client
-def fileUpload(conn):
+def fileUpload(dconn):
     #buffer size for recieving data from client
     BUFFER_SIZE = 4096
     #a delimiter for when the client sends the file name / size, The way I coded it
     # the client sends both information at once, so need the separator for separating them
     SEPARATOR = "<SEPARATOR>"
     #recieve file information (which client sends first after connection is established)
-    rcvTemp = conn.recv(BUFFER_SIZE).decode()
+    rcvTemp = dconn.recv(BUFFER_SIZE).decode()
     #separate the raw data into its apporiate parts
     filename, filesize = rcvTemp.split(SEPARATOR)
     #remove a path from the filename if it was sent with one, so we're left with just
     #the name of the file
     filename = os.path.basename(filename)
+    fs = 0
     #this handles transfering of the file
     with open(filename, "wb") as f:
         while True:
-            bytes_read = conn.recv(BUFFER_SIZE)
+            bytes_read = dconn.recv(BUFFER_SIZE)
+            fsTemp = sys.getsizeof(bytes_read)
+            fs += fsTemp
             if not bytes_read:
                 break
             f.write(bytes_read)
     print(f"[+] File {filename} received")
+    print(f"[DEBUG] Total file size: {filesize}")
+    print(f"[DEBUG] file size received: {fs}")
 
 main()

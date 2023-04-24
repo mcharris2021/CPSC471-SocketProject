@@ -46,14 +46,16 @@ def uploadFile(d):
     fileName = "test1.txt"
     fileSize = os.path.getsize(fileName)
     d.send(f"{fileName}{SEPARATOR}{fileSize}".encode())
-    
+    fs = 0
     with open(fileName, "rb") as f:
         while True:
             bytes_read = f.read(BUFFER_SIZE)
+            fsTemp = sys.getsizeof(bytes_read)
+            fs += fsTemp
             if not bytes_read:
                 break
             d.sendall(bytes_read)
 
-    print("Sent", fileSize, "bytes.")
+    print("Sent", fs, "bytes.")
 
 main()
