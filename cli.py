@@ -1,6 +1,6 @@
 import socket, sys, os, random
 
-# Default IP address
+# Default IP address.
 HOST = "localhost"
 # Default FTP port number
 PORT = 1234

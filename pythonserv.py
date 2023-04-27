@@ -2,7 +2,7 @@ import socket, sys, os, threading
 DEBUG = True
 # Default hostname
 HOST = "localhost"
-# Default FTP port
+# Default FTP port*
 PORT = 21
 
 def dataCONNECTION(conn, command):
