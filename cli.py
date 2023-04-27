@@ -14,6 +14,7 @@ def main():
         PORT = int(sys.argv[2])
         # call the control connection function
         controlCONN(HOST, PORT)
+       
 
 #Control connection function
 def controlCONN(HOST, PORT):
@@ -21,10 +22,69 @@ def controlCONN(HOST, PORT):
         print(f"[*] Connecting to {HOST}:{PORT}")
         s.connect((HOST, PORT))
         print("[+] Connected.")
+
+        command = display_menu(HOST,PORT) 
+
+        s.send(command.encode())
+        # Receive the response from the server
+        response = s.recv(1024).decode()
+        print(f'response:{response}')
+        # Parse FTP response and execute it
+        if response.startswith("get "):
+            filename = response.split()[1]
+            with open(filename, "wb") as f:
+                data = s.recv(1024)
+                while data:
+                    f.write(data)
+                    data = s.recv(1024)
+            print("File downloaded: " + filename)
+        elif response.startswith("put "):
+           # print(f'put command reached') TESTING
+            filename = response.split()[1]
+            
+            with open(filename, "rb") as f:
+                data = f.read(1024)
+                while data:
+                    s.send(data)
+                    data = f.read(1024)
+            print("File uploaded: " + filename)
+        elif response == "ls":
+            data = s.recv(1024)
+            while data:
+                print(data.decode(), end="")
+                data = s.recv(1024)
+        elif response == "quit":
+            s.close()
+            return 0
+        else:
+            print("Testing else")
+
         # Data connection is currently bugged
         #dataCONN(HOST, s)
+
         uploadFile(s)
     print(f"[-] Disconnected from {HOST}:{PORT}")
+ 
+def display_menu(HOST,PORT):
+        
+    # Display menu options
+    print("Enter one of the following command prompts:")
+    print("ftp> get <file name> (downloads file <file name> from the server)") 
+    print("ftp> put <filename> (uploads file <file name> to the server)")
+    print("ftp> ls(lists files on the server)")
+    print("ftp> quit (disconnects from the server and exits)")
+
+   #while True:
+
+    # Prompt user for FTP command
+    command = input("ftp> ")
+
+    # Send the FTP command to the server
+    print(f'command:{command}')
+    #print(f's:{s}')
+
+    return command
+
 
 #Data Connection Function
 def dataCONN(HOST, s):
