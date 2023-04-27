@@ -91,7 +91,7 @@ def fileUpload(dconn):
             bytes_read = dconn.recv(BUFFER_SIZE)
             fsTemp = sys.getsizeof(bytes_read)
             fs += fsTemp
-            if not bytes_read:
+            if not bytes_read:  
                 break
             f.write(bytes_read)
     print(f"[+] File {filename} received")
@@ -99,3 +99,5 @@ def fileUpload(dconn):
     print(f"[DEBUG] file size received: {fs}")
 
 main()
+
+#gygubgyg
