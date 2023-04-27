@@ -1,121 +1,98 @@
-import socket, sys, os
+import socket, sys, os, random
 
 # Default IP address
-HOST = "local host"
+HOST = "localhost"
 # Default FTP port number
-PORT = 21
+PORT = 1234
+DEBUG = True
 
-#Main function, called at the end
-def main():
-    if len(sys.argv) < 2:
-        print("[*] Correct format: python " + sys.argv[0] + " <server hostname> <server port>\n")
+def dataCONNECTION():
+    dp = random.randint(1024, 65535)
+    ds = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    ds.bind(('', dp))
+    ds.listen(1)
+    return ds, dp
+
+def _get(clientSOCKET, command):
+    clientSOCKET.send(command.encode())
+    response = clientSOCKET.recv(1024).decode()
+
+    if response == 'OK':
+        file_name = command.split(' ')[1]
+        ds, dp = dataCONNECTION()
+        clientSOCKET.send(str(dp).encode())
+
+        conn, _ = ds.accept()
+        with open(file_name, 'wb') as data_file:
+            while True:
+                data = conn.recv(1024)
+                if not data:
+                    break
+                data_file.write(data)
+
+        conn.close()
+        ds.close()
     else:
-        HOST = sys.argv[1]
-        PORT = int(sys.argv[2])
-        # call the control connection function
-        controlCONN(HOST, PORT)
-       
+        print(response)
 
-#Control connection function
-def controlCONN(HOST, PORT):
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        print(f"[*] Connecting to {HOST}:{PORT}")
-        s.connect((HOST, PORT))
-        print("[+] Connected.")
+def _put(clientSOCKET, command):
+    filename = command.split(' ')[1]
 
-        command = display_menu(HOST,PORT) 
+    if os.path.isfile(filename):
+        clientSOCKET.send(command.encode())
+        clientSOCKET.recv(1024).decode()
 
-        s.send(command.encode())
-        # Receive the response from the server
-        response = s.recv(1024).decode()
-        print(f'response:{response}')
-        # Parse FTP response and execute it
-        if response.startswith("get "):
-            filename = response.split()[1]
-            with open(filename, "wb") as f:
-                data = s.recv(1024)
-                while data:
-                    f.write(data)
-                    data = s.recv(1024)
-            print("File downloaded: " + filename)
-        elif response.startswith("put "):
-           # print(f'put command reached') TESTING
-            filename = response.split()[1]
-            
-            with open(filename, "rb") as f:
-                data = f.read(1024)
-                while data:
-                    s.send(data)
-                    data = f.read(1024)
-            print("File uploaded: " + filename)
-        elif response == "ls":
-            data = s.recv(1024)
-            while data:
-                print(data.decode(), end="")
-                data = s.recv(1024)
-        elif response == "quit":
-            s.close()
-            return 0
+        ds, dp = dataCONNECTION()
+        clientSOCKET.send(str(dp).encode())
+
+        conn, _ = ds.accept()
+        with open(filename, 'rb') as data_file:
+            conn.sendfile(data_file)
+
+        conn.close()
+        ds.close()
+    else:
+        print('File not found')
+
+def _ls(clientSOCKET):
+    clientSOCKET.send('ls'.encode())
+    ds, dp = dataCONNECTION()
+    clientSOCKET.send(str(dp).encode())
+
+    conn, _ = ds.accept()
+    data = conn.recv(1024).decode()
+    print(data)
+
+    conn.close()
+    ds.close()
+
+def main():
+    if len(sys.argv) != 3:
+        print("[*] Usage: cli.py <server machine> <server port>")
+        sys.exit(1)
+
+    HOST = sys.argv[1]
+    PORT = int(sys.argv[2])
+
+    clientSOCKET = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    clientSOCKET.connect((HOST, PORT))
+
+    while True:
+        command = input("ftp> ")
+
+        if command.startswith('get'):
+            _get(clientSOCKET, command)
+        elif command.startswith('put'):
+            _put(clientSOCKET, command)
+        elif command == 'ls':
+            _ls(clientSOCKET)
+        elif command == 'quit':
+            clientSOCKET.send(command.encode())
+            break
         else:
-            print("Testing else")
+            print("Invalid command")
 
-        # Data connection is currently bugged
-        #dataCONN(HOST, s)
+    clientSOCKET.close()
 
-        uploadFile(s)
-    print(f"[-] Disconnected from {HOST}:{PORT}")
- 
-def display_menu(HOST,PORT):
-        
-    # Display menu options
-    print("Enter one of the following command prompts:")
-    print("ftp> get <file name> (downloads file <file name> from the server)") 
-    print("ftp> put <filename> (uploads file <file name> to the server)")
-    print("ftp> ls(lists files on the server)")
-    print("ftp> quit (disconnects from the server and exits)")
-
-   #while True:
-
-    # Prompt user for FTP command
-    command = input("ftp> ")
-
-    # Send the FTP command to the server
-    print(f'command:{command}')
-    #print(f's:{s}')
-
-    return command
-
-
-#Data Connection Function
-def dataCONN(HOST, s):
-    dport = s.recv(4096).decode()
-    dport = int(dport)
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as d:
-        print(f"[+] Establishing data connection to {HOST}:{dport}")
-        d.connect((HOST, dport))
-        print("[+] Connected.")
-        uploadFile(d)
-
-#Test function to test transfering file to server
-#creating the download function should be more or less the same as uploading,
-#just reverse the client and server versions of the functions for upload (I assume)
-def uploadFile(d):
-    BUFFER_SIZE = 4096
-    SEPARATOR = "<SEPARATOR>"
-    #name of local text file on my computer, this is just for test purposes.
-    #for the end product, the user would specify the name of the file to transfer
-    fileName = "test1.txt"
-    fileSize = os.path.getsize(fileName)
-    d.send(f"{fileName}{SEPARATOR}{fileSize}".encode())
-    fs = 0
-    with open(fileName, "rb") as f:
-        while True:
-            bytes_read = f.read(BUFFER_SIZE)
-            fsTemp = sys.getsizeof(bytes_read)
-            fs += fsTemp
-            if not bytes_read:
-                break
-            d.sendall(bytes_read)
-    print("[DEBUG] Sent", fs, "bytes.")
 
 main()
